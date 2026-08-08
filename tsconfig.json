@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022" /* Modern JavaScript features */,
+    "module": "NodeNext" /* Required for modern Node.js */,
+    "moduleResolution": "NodeNext" /* Matches Node's module resolution */,
+    "outDir": "./dist" /* Compiled JavaScript goes here */,
+    "rootDir": "./src" /* Your TypeScript source code */,
+    "strict": true /* Enables strict type checking */,
+    "esModuleInterop": true /* Smooth compatibility with CommonJS */,
+    "skipLibCheck": true /* Faster builds by skipping type files */,
+    "forceConsistentCasingInFileNames": true /* Prevents OS-specific naming bugs */,
+    "types": ["node"], /*automatically load global Node.js types*/
+    "noUnusedParameters": true
+  },
+  "include": ["src/**/*"] /* Tells compiler to look only in src */
+}
