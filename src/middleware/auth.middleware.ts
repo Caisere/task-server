@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { appError } from "../lib/appError";
+import { AppError } from "../lib/appError";
 import { verifyAccessToken } from "../lib/jwt";
 import { JwtPayload } from "../types";
 
@@ -8,15 +8,31 @@ export function authenticate(
   _res: Response,
   next: NextFunction,
 ): void {
-  const authHeader = req.headers.authorization;
+  // const authHeader = req.headers.authorization;
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    throw new appError(401, "Access Token is required...");
+  // if (!authHeader?.startsWith("Bearer ")) {
+  //   throw new appError(401, "Access Token is required...");
+  // }
+
+  // const accessToken = authHeader.split(" ")[1];
+  const accessToken = req.cookies?.['access_cookie'];
+
+  if (!accessToken) {
+    throw new AppError(401, 'Authorized')
   }
 
-  const token = authHeader.split(" ")[1];
+  req.user = verifyAccessToken(accessToken) as JwtPayload;
 
-  req.user = verifyAccessToken(token) as JwtPayload;
+  next();
+}
+
+export function requireCsrf(req: Request, _res: Response, next: NextFunction) {
+  const csrfCookie = req.cookies?.["csrf_token"];
+  const csrfHeader = req.header("x-csrf-token");
+
+  if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+    throw new AppError(403, "Invalid csrf token");
+  }
 
   next();
 }
