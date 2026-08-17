@@ -1,6 +1,11 @@
 import { Router } from "express";
-import { loginUser, registerUser } from "../services/auth.service";
+import {
+  loginUser,
+  registerUser,
+  validateRefreshToken,
+} from "../services/auth.service";
 import { authenticate } from "../middleware/auth.middleware";
+import { setAuthCookies } from "../lib/cookie";
 
 export const authRouter = Router();
 
@@ -28,14 +33,32 @@ authRouter.post("/login", async (req, res, next) => {
     const { email, password } = req.body;
 
     // login user
-    const accessToken = await loginUser(email, password);
+    const { id, email: userEmail, role } = await loginUser(email, password);
+
+    setAuthCookies(res, { id, email: userEmail, role });
 
     res.status(200).json({
       success: true,
+      message: "Logged in successfully",
       data: {
-        accessToken,
+        id,
+        email: userEmail,
+        role,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post("/refresh", async (req, res, next) => {
+  try {
+    const { id, email, role } = await validateRefreshToken(req);
+
+    // sign-new cookies
+    setAuthCookies(res, { id, email, role });
+
+    res.status(200).json({ success: true, message: "Token refreshed" });
   } catch (error) {
     next(error);
   }

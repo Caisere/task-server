@@ -4,10 +4,12 @@ import { notFound } from "./middleware/not-found";
 import cors from "cors";
 import { env } from "./config/env";
 import { apiRouters } from "./routes";
+import cookieParser from 'cookie-parser'
 
 const corsOptions = {
   origin: env.allowOrigin,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true
 };
 
 export function createApp() {
@@ -15,6 +17,7 @@ export function createApp() {
 
   // middleware
   app.use(cors(corsOptions));
+  app.use(cookieParser())
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 

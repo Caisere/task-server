@@ -19,6 +19,16 @@ export const env = {
   logLevel: process.env.LOG_LEVEL,
   allowOrigin: process.env.ALLOWED_ORIGINS,
   dbUrl: checkRequiredEnvVariable("DATABASE_URL"),
-  jwt_secret_key: checkRequiredEnvVariable("JWT_SECRET_KEY"),
-  jwt_expiry_time: checkRequiredEnvVariable("JWT_EXPIRY_PERIOD"),
+  access_token_secret_key: checkRequiredEnvVariable("ACCESS_TOKEN_SECRET_KEY"),
+  access_token_expiry_time: checkRequiredEnvVariable(
+    "ACCESS_TOKEN_EXPIRY_PERIOD",
+  ),
+  refresh_token_secret_key: checkRequiredEnvVariable(
+    "REFRESH_TOKEN_SECRET_KEY",
+  ),
+  refresh_token_expiry_time: checkRequiredEnvVariable(
+    "REFRESH_TOKEN_EXPIRY_PERIOD",
+  ),
+  cookie_secure: process.env.COOKIE_SECURE === 'true',
+  cookie_same_site: checkRequiredEnvVariable("COOKIE_SAME_SITE"),
 } as const;
