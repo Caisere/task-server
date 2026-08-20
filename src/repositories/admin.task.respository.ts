@@ -17,7 +17,7 @@ export async function findAllTasks(
 
   if (filters.trimmedSearch) {
     conditions.push(`title ILIKE $${paramIndex}`);
-    values.push(`%${filters.trimmedSearch}`);
+    values.push(`%${filters.trimmedSearch}%`);
     paramIndex++;
   }
 

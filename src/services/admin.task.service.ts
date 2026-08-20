@@ -27,7 +27,7 @@ export async function getAdminTask(
   if (trimmedStatus && !TASK_STATUSES.includes(trimmedStatus as TaskStatus)) {
     throw new AppError(
       400,
-      "status must be between open, in_progress, or resolved",
+      "status must be between pending, in_progress, or resolved",
     );
   }
 
