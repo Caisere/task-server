@@ -1,5 +1,13 @@
+import { env } from "../config/env";
 import { AppError } from "../lib/appError";
 import {
+  ADMIN_GET_ALL_CACHED_TASK_KEY,
+  createAdminTaskCacheKey,
+  invalidateTaskCachesForAdminAndUser,
+} from "../lib/cache-helper";
+import { redisClient } from "../redis/redis";
+import {
+  admGetTaskById,
   findAllTasks,
   updateTaskStatus,
 } from "../repositories/admin.task.respository";
@@ -18,7 +26,9 @@ const TASK_STATUSES = ["PENDING", "IN_PROGRESS", "RESOLVED"] as const;
 
 export type TaskStatus = (typeof TASK_STATUSES)[number];
 
-export async function getAdminTask(
+const GET_ALL_CACHED_TASK_EXPIRY = Number(env.cache_expiry);
+
+export async function fetchAdminTask(
   query: AdminTaskQueryList,
 ): Promise<AdminTaskListResponse> {
   const trimmedSearch = query.search?.trim();
@@ -30,12 +40,62 @@ export async function getAdminTask(
       "status must be between pending, in_progress, or resolved",
     );
   }
-
   const tasks = await findAllTasks({ trimmedSearch, trimmedStatus });
 
   return {
     tasks,
   };
+}
+
+export async function getAdminTask(
+  query: AdminTaskQueryList,
+): Promise<AdminTaskListResponse> {
+  const hasFilter = Boolean(query.search || query.status);
+
+  if (hasFilter) {
+    const tasks = await fetchAdminTask(query);
+    return tasks;
+  }
+
+  const cachedTasks = await redisClient.get(ADMIN_GET_ALL_CACHED_TASK_KEY);
+
+  if (cachedTasks) {
+    return JSON.parse(cachedTasks) as AdminTaskListResponse;
+  }
+
+  const tasks = await fetchAdminTask(query);
+
+  // set to redis
+  await redisClient.setEx(
+    ADMIN_GET_ALL_CACHED_TASK_KEY,
+    GET_ALL_CACHED_TASK_EXPIRY,
+    JSON.stringify(tasks),
+  );
+
+  return tasks;
+}
+
+export async function adminGetTaskById(taskId: string): Promise<Task> {
+  const TASK_CACHE_KEY = createAdminTaskCacheKey(taskId);
+  const cachedTask = await redisClient.get(TASK_CACHE_KEY);
+
+  if (cachedTask) {
+    return JSON.parse(cachedTask) as Task;
+  }
+
+  const task = await admGetTaskById(taskId);
+
+  if (!task) {
+    throw new AppError(404, "task not found");
+  }
+
+  await redisClient.setEx(
+    TASK_CACHE_KEY,
+    GET_ALL_CACHED_TASK_EXPIRY,
+    JSON.stringify(task),
+  );
+
+  return task;
 }
 
 export async function adminUpdateTask(
@@ -57,6 +117,8 @@ export async function adminUpdateTask(
   if (!task) {
     throw new AppError(404, "Task not found");
   }
+
+  await invalidateTaskCachesForAdminAndUser(task.user_id, taskId);
 
   return task;
 }

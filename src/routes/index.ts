@@ -8,5 +8,5 @@ export const apiRouters = Router();
 
 apiRouters.use(healthRoute);
 apiRouters.use("/auth", authRouter);
-apiRouters.use('/tasks', userTaskRouter)
-apiRouters.unsubscribe('/admin/tasks', adminTaskRouter)
+apiRouters.use("/tasks", userTaskRouter);
+apiRouters.use("/admin/tasks", adminTaskRouter);

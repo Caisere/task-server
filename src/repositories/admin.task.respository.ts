@@ -1,5 +1,4 @@
 import { pool } from "../lib/db";
-import { TaskStatus } from "../services/admin.task.service";
 import { Task } from "../types";
 
 type AdminTaskListFilters = {
@@ -22,7 +21,7 @@ export async function findAllTasks(
   }
 
   if (filters.trimmedStatus) {
-    conditions.push(`status = ${paramIndex}`);
+    conditions.push(`status = $${paramIndex}`);
     values.push(filters.trimmedStatus);
   }
 
@@ -33,13 +32,26 @@ export async function findAllTasks(
     `
       SELECT id, title, status, user_id, created_at, updated_at
       FROM support_tasks
-      WHERE ${whereClause}
+      ${whereClause}
       ORDER BY created_at DESC
     `,
     values,
   );
 
   return result.rows;
+}
+
+export async function admGetTaskById(taskId: string): Promise<Task> {
+  const result = await pool.query<Task>(
+    `
+      SELECT id, title, status, user_id, created_at, updated_at
+      FROM support_tasks
+      WHERE id = $1
+    `,
+    [taskId],
+  );
+
+  return result.rows[0] || null;
 }
 
 export async function updateTaskStatus(

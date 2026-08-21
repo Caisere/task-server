@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/appError";
 
 export function requireAdmin(req: Request, _res: Response, next: NextFunction) {
-  if (req.user?.role === "ADMIN") {
+  if (req.user?.role !== "ADMIN") {
     next(
       new AppError(
         403,

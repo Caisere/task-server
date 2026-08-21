@@ -7,7 +7,7 @@ type MigrationRow = {
   name: string;
 };
 
-const MIGRATION_DIR = path.join(process.cwd(), "migration");
+const MIGRATION_DIR = path.join(process.cwd(), "migrations");
 
 const CREATE_MIGRATION_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS migrations (
