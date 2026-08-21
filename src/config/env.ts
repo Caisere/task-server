@@ -29,6 +29,8 @@ export const env = {
   refresh_token_expiry_time: checkRequiredEnvVariable(
     "REFRESH_TOKEN_EXPIRY_PERIOD",
   ),
-  cookie_secure: process.env.COOKIE_SECURE === 'true',
+  cookie_secure: process.env.COOKIE_SECURE === "true",
   cookie_same_site: checkRequiredEnvVariable("COOKIE_SAME_SITE"),
+  redis_url: checkRequiredEnvVariable("REDIS_URL"),
+  cache_expiry: checkRequiredEnvVariable("GET_ALL_CACHED_TASK_EXPIRY"),
 } as const;

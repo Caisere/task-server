@@ -36,7 +36,7 @@ export async function createTask(userId: string, title: string): Promise<Task> {
   const result = await pool.query(
     `
       INSERT INTO support_tasks (user_id, title)
-      VALUES  (1$, 2$)
+      VALUES  ($1, $2)
       RETURNING id, title, status, user_id, created_at, updated_at
     `,
     [userId, title],
@@ -53,8 +53,8 @@ export async function updateTask(
   const result = await pool.query(
     `
       UPDATE support_task
-      SET title = 1$, updated_at = NOW()
-      WHERE id = 2$
+      SET title = $1, updated_at = NOW()
+      WHERE id = $2
         AND user_id = $3
       RETURNING id, title, status, user_id, created_at, updated_at 
     `,

@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth.middleware";
 import { requireAdmin } from "../middleware/admin.middleware";
-import { adminUpdateTask, getAdminTask } from "../services/admin.task.service";
+import {
+  adminGetTaskById,
+  adminUpdateTask,
+  getAdminTask,
+} from "../services/admin.task.service";
 
 export const adminTaskRouter = Router();
 
@@ -23,10 +27,24 @@ adminTaskRouter.get("/", async (req, res, next) => {
   }
 });
 
+adminTaskRouter.get("/:taskId", async (req, res, next) => {
+  try {
+    const taskId = req.params.taskId;
+    const task = await adminGetTaskById(taskId);
+
+    return res.status(200).json({
+      success: true,
+      task,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 adminTaskRouter.patch("/:taskId/status", async (req, res, next) => {
   try {
     const taskId = req.params.taskId;
-    const status = req.body;
+    const status = req.body.status;
     const task = await adminUpdateTask(taskId, status);
 
     return res.status(200).json({

@@ -1,5 +1,5 @@
 CREATE TABLE banners (
-  id UUID PRIMARY KEY DEFAULT gen_randon_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   image_url TEXT NOT NULL,
 
