@@ -6,44 +6,63 @@ import {
 } from "../services/auth.service";
 import { authenticate } from "../middleware/auth.middleware";
 import { setAuthCookies } from "../lib/cookie";
+import {
+  authenticationRateLimit,
+  refreshRateLimit,
+} from "../middleware/rateLimit.middleware";
 
 export const authRouter = Router();
 
 // register
-authRouter.post("/register", async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
+authRouter.post(
+  "/register",
+  authenticationRateLimit,
+  async (req, res, next) => {
+    try {
+      const { email, password } = req.body;
 
-    // service login
-    await registerUser(email, password);
+      // service login
+      await registerUser(email, password);
 
-    // return response
-    res.status(201).json({
-      success: true,
-      message: "User Created Successfully. Please, login to continue",
-    });
-  } catch (error) {
-    next(error);
-  }
-});
+      // return response
+      res.status(201).json({
+        success: true,
+        message: "User Created Successfully. Please, login to continue",
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 // login
-authRouter.post("/login", async (req, res, next) => {
+authRouter.post("/login", authenticationRateLimit, async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     // login user
-    const { id, email: userEmail, role } = await loginUser(email, password);
+    const payload = await loginUser(email, password);
 
-    setAuthCookies(res, { id, email: userEmail, role });
+    if (!payload) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    setAuthCookies(res, {
+      id: payload.id,
+      email: payload.email,
+      role: payload.role,
+    });
 
     res.status(200).json({
       success: true,
       message: "Logged in successfully",
       data: {
-        id,
-        email: userEmail,
-        role,
+        id: payload.id,
+        email: payload.email,
+        role: payload.role,
       },
     });
   } catch (error) {
@@ -51,7 +70,7 @@ authRouter.post("/login", async (req, res, next) => {
   }
 });
 
-authRouter.post("/refresh", async (req, res, next) => {
+authRouter.post("/refresh", refreshRateLimit, async (req, res, next) => {
   try {
     const { id, email, role } = await validateRefreshToken(req);
 
