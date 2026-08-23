@@ -6,10 +6,11 @@ import {
   adminUpdateTask,
   getAdminTask,
 } from "../services/admin.task.service";
+import { tasksRateLimit } from "../middleware/rateLimit.middleware";
 
 export const adminTaskRouter = Router();
 
-adminTaskRouter.use(authenticate, requireAdmin);
+adminTaskRouter.use(authenticate, tasksRateLimit, requireAdmin);
 
 adminTaskRouter.get("/", async (req, res, next) => {
   try {

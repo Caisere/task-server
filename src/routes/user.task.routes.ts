@@ -7,10 +7,11 @@ import {
   getUserTasks,
   updateUserTask,
 } from "../services/user.task.service";
+import { tasksRateLimit } from "../middleware/rateLimit.middleware";
 
 export const userTaskRouter = Router();
 
-userTaskRouter.use(authenticate);
+userTaskRouter.use(authenticate, tasksRateLimit);
 
 userTaskRouter.get("/", async (req, res, next) => {
   try {

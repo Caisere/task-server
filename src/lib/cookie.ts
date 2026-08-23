@@ -1,10 +1,11 @@
-import { CookieOptions, Response } from "express";
+import { CookieOptions, Response, Request } from "express";
 import { env } from "../config/env";
 import { JwtPayload } from "../types";
 import {
   generateAccessToken,
   generateCsrfToken,
   generateRefreshToken,
+  verifyRefreshToken,
 } from "./jwt";
 
 const ACCESS_COOKIE = "access_cookie";
@@ -51,4 +52,16 @@ export function clearAuthCookies(res: Response) {
   res.clearCookie(ACCESS_COOKIE, clearOptions);
   res.clearCookie(REFRESH_COOKIE, clearOptions);
   res.clearCookie(CSRF_COOKIE, clearOptions);
+}
+
+export function verifyRefreshCookie(req: Request): string | undefined {
+  const refreshToken = req.cookies?.["refresh_cookie"];
+  if (!refreshToken) return undefined;
+
+  try {
+    const user = verifyRefreshToken(refreshToken);
+    return user.id;
+  } catch (error) {
+    return undefined;
+  }
 }
