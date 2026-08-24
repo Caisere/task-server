@@ -23,7 +23,7 @@ export const env = {
 
   // logger variables
   logLevel: process.env.LOG_LEVEL,
-  
+
   // cookies variables
   allowOrigin: process.env.ALLOWED_ORIGINS,
   access_token_secret_key: checkRequiredEnvVariable("ACCESS_TOKEN_SECRET_KEY"),
@@ -58,5 +58,14 @@ export const env = {
   ),
   refresh_rate_limit_window_seconds: checkRequiredEnvVariable(
     "REFRESH_COOKIE_RATE_LIMIT_WINDOW_SECONDS",
+  ),
+
+  // cloudinary variables
+  cloudinary_cloud_name: checkRequiredEnvVariable("CLOUDINARY_CLOUD_NAME"),
+  cloudinary_cloud_api_key: checkRequiredEnvVariable(
+    "CLOUDINARY_CLOUD_API_KEY",
+  ),
+  cloudinary_cloud_api_secret: checkRequiredEnvVariable(
+    "CLOUDINARY_CLOUD_API_SECRET",
   ),
 } as const;
