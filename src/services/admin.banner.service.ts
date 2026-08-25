@@ -1,5 +1,13 @@
+import { env } from "../config/env";
 import { AppError } from "../lib/appError";
+import {
+  ADMIN_GET_ALL_CACHED_BANNER_KEY,
+  createAdminBannerCacheKey,
+  invalidateAdminBannerCache,
+} from "../lib/cache-helper";
 import { uploadToCloudinary } from "../lib/cloudinary";
+import { logger } from "../lib/logger";
+import { redisClient } from "../redis/redis";
 import {
   createAdminBanner,
   getAdminBanners,
@@ -7,16 +15,51 @@ import {
 } from "../repositories/admin.banner.respository";
 import { Banner } from "../types";
 
+const CACHE_EXPIRY_TIME = Number(env.cache_expiry);
+
 export async function getAdminBannerService(): Promise<Banner[]> {
-  return getAdminBanners();
+  const cachedBanner = await redisClient.get(ADMIN_GET_ALL_CACHED_BANNER_KEY);
+
+  if (cachedBanner) {
+    return JSON.parse(cachedBanner) as Banner[];
+  }
+
+  const banners = await getAdminBanners();
+
+  if (banners.length === 0) {
+    throw new AppError(404, "No Banners created yet!");
+  }
+
+  await redisClient.setEx(
+    ADMIN_GET_ALL_CACHED_BANNER_KEY,
+    CACHE_EXPIRY_TIME,
+    JSON.stringify(banners),
+  );
+
+  return banners;
 }
 
 export async function getAdminBannerById(bannerId: string): Promise<Banner> {
+  const CACHED_BANNER_KEY = createAdminBannerCacheKey(bannerId);
+
+  const cachedBanner = await redisClient.get(CACHED_BANNER_KEY);
+
+  if (cachedBanner) {
+    logger.info(`${cachedBanner}`);
+    return JSON.parse(cachedBanner) as Banner;
+  }
+
   const banner = await getBannerById(bannerId);
 
   if (!banner) {
     throw new AppError(404, "Banner not found");
   }
+
+  await redisClient.setEx(
+    CACHED_BANNER_KEY,
+    CACHE_EXPIRY_TIME,
+    JSON.stringify(banner),
+  );
 
   return banner;
 }
@@ -48,6 +91,8 @@ export async function createAdminBannerService(
       "Image successfully uploaded to cloud-storage, but error occured while uploading to the database",
     );
   }
+
+  await invalidateAdminBannerCache();
 
   return banner;
 }
