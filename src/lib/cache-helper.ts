@@ -5,8 +5,16 @@ import { redisClient } from "../redis/redis";
 // ==========================================
 export const ADMIN_GET_ALL_CACHED_TASK_KEY = "admin:tasks:all";
 
-export function createAdminTaskCacheKey(taskId: string) {
+export const ADMIN_GET_ALL_CACHED_BANNER_KEY = "admin:banner:all";
+
+export function createAdminTaskCacheKey(taskId: string): string {
   return `admin:task:${taskId}`;
+}
+
+export function createAdminBannerCacheKey(
+  bannerId: string,
+): string {
+  return `admin:banner:${bannerId}`;
 }
 
 export async function invalidateAdminTaskCacheKey(taskId: string) {
@@ -16,6 +24,13 @@ export async function invalidateAdminTaskCacheKey(taskId: string) {
 // invalidate admin get all task cache
 export async function invalidateAdminCache() {
   return await redisClient.del(ADMIN_GET_ALL_CACHED_TASK_KEY);
+}
+
+export async function invalidateAdminBannerCache(
+  _adminId?: string,
+  _bannerId?: string,
+) {
+  return await redisClient.del(ADMIN_GET_ALL_CACHED_BANNER_KEY);
 }
 
 // ==========================================
