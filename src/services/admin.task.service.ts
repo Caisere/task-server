@@ -5,7 +5,7 @@ import {
   createAdminTaskCacheKey,
   invalidateTaskCachesForAdminAndUser,
 } from "../lib/cache-helper";
-import { redisClient } from "../redis/redis";
+import { redisClient, setDataToRedis } from "../redis/redis";
 import {
   admGetTaskById,
   findAllTasks,
@@ -66,12 +66,8 @@ export async function getAdminTask(
   const tasks = await fetchAdminTask(query);
 
   // set to redis
-  await redisClient.setEx(
-    ADMIN_GET_ALL_CACHED_TASK_KEY,
-    GET_ALL_CACHED_TASK_EXPIRY,
-    JSON.stringify(tasks),
-  );
-
+  await setDataToRedis(ADMIN_GET_ALL_CACHED_TASK_KEY, tasks);
+  
   return tasks;
 }
 
@@ -89,11 +85,7 @@ export async function adminGetTaskById(taskId: string): Promise<Task> {
     throw new AppError(404, "task not found");
   }
 
-  await redisClient.setEx(
-    TASK_CACHE_KEY,
-    GET_ALL_CACHED_TASK_EXPIRY,
-    JSON.stringify(task),
-  );
+  await setDataToRedis(TASK_CACHE_KEY, task);
 
   return task;
 }

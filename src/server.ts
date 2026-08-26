@@ -1,11 +1,11 @@
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
-import { connectRedis, disconnectRedis } from "./redis/redis";
+import { disconnectRedis } from "./redis/redis";
 
 async function serverStartUp(): Promise<void> {
   try {
-    await connectRedis();
+    // await connectRedis();
 
     const app = createApp();
 

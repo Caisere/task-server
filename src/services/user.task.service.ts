@@ -7,7 +7,7 @@ import {
   invalidateTaskCachesForAdminAndUser,
   invalidateUserTaskCache,
 } from "../lib/cache-helper";
-import { redisClient } from "../redis/redis";
+import { redisClient, setDataToRedis } from "../redis/redis";
 import {
   createTask,
   deleteTask,
@@ -51,11 +51,7 @@ export async function getUserTasks(userId: string): Promise<Task[]> {
     );
   }
 
-  await redisClient.setEx(
-    USER_CACHED_TASKLISTS,
-    CACHE_EXPIRY_TIME,
-    JSON.stringify(tasks),
-  );
+  await setDataToRedis(USER_CACHED_TASKLISTS, tasks);
 
   return tasks;
 }
@@ -78,11 +74,7 @@ export async function getUserTaskById(
     throw new AppError(404, "Task not found");
   }
 
-  await redisClient.setEx(
-    USER_CACHED_TASK,
-    CACHE_EXPIRY_TIME,
-    JSON.stringify(task),
-  );
+  await setDataToRedis(USER_CACHED_TASK, task);
 
   return task;
 }
@@ -95,10 +87,7 @@ export async function createUserTask(
 
   const newTask = await createTask(userId, validatedTitle);
 
-  await Promise.all([
-    invalidateAdminCache(), 
-    invalidateUserTaskCache(userId)
-  ]);
+  await Promise.all([invalidateAdminCache(), invalidateUserTaskCache(userId)]);
 
   return newTask;
 }

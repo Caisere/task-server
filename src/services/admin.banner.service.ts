@@ -7,7 +7,7 @@ import {
 } from "../lib/cache-helper";
 import { uploadToCloudinary } from "../lib/cloudinary";
 import { logger } from "../lib/logger";
-import { redisClient } from "../redis/redis";
+import { redisClient, setDataToRedis } from "../redis/redis";
 import {
   createAdminBanner,
   getAdminBanners,
@@ -30,11 +30,7 @@ export async function getAdminBannerService(): Promise<Banner[]> {
     throw new AppError(404, "No Banners created yet!");
   }
 
-  await redisClient.setEx(
-    ADMIN_GET_ALL_CACHED_BANNER_KEY,
-    CACHE_EXPIRY_TIME,
-    JSON.stringify(banners),
-  );
+  await setDataToRedis(ADMIN_GET_ALL_CACHED_BANNER_KEY, banners);
 
   return banners;
 }
@@ -55,11 +51,7 @@ export async function getAdminBannerById(bannerId: string): Promise<Banner> {
     throw new AppError(404, "Banner not found");
   }
 
-  await redisClient.setEx(
-    CACHED_BANNER_KEY,
-    CACHE_EXPIRY_TIME,
-    JSON.stringify(banner),
-  );
+  await setDataToRedis(CACHED_BANNER_KEY, banner);
 
   return banner;
 }
