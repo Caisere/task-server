@@ -7,15 +7,15 @@ import {
 } from "../lib/cache-helper";
 import { uploadToCloudinary } from "../lib/cloudinary";
 import { logger } from "../lib/logger";
+import { deleteCloudinaryImageJob } from "../queues/deleteCloudinaryImage.queue";
 import { redisClient, setDataToRedis } from "../redis/redis";
 import {
   createAdminBanner,
+  deleteAdminBanner,
   getAdminBanners,
   getBannerById,
 } from "../repositories/admin.banner.respository";
 import { Banner } from "../types";
-
-const CACHE_EXPIRY_TIME = Number(env.cache_expiry);
 
 export async function getAdminBannerService(): Promise<Banner[]> {
   const cachedBanner = await redisClient.get(ADMIN_GET_ALL_CACHED_BANNER_KEY);
@@ -87,4 +87,19 @@ export async function createAdminBannerService(
   await invalidateAdminBannerCache();
 
   return banner;
+}
+
+export async function deleteAdminBannerService(
+  bannerId: string,
+): Promise<void> {
+  const publicId = await deleteAdminBanner(bannerId);
+
+  if (!publicId) {
+    throw new AppError(404, "No banner found with the id supplied");
+  }
+
+  await invalidateAdminBannerCache();
+
+  // delete BullMQ job
+  await deleteCloudinaryImageJob(publicId)
 }
