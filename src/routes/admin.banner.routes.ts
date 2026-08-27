@@ -4,6 +4,7 @@ import { requireAdmin } from "../middleware/admin.middleware";
 import { uploadSingleBannerImage } from "../middleware/banner.middleware";
 import {
   createAdminBannerService,
+  deleteAdminBannerService,
   getAdminBannerById,
   getAdminBannerService,
 } from "../services/admin.banner.service";
@@ -52,6 +53,21 @@ adminBannerRouter.post("/", uploadSingleBannerImage, async (req, res, next) => {
     res.status(201).json({
       success: true,
       data: { banner },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+adminBannerRouter.delete("/:bannerId", async (req, res, next) => {
+  try {
+    const bannerId = req.params.bannerId;
+
+    await deleteAdminBannerService(bannerId);
+
+    res.status(200).json({
+      success: false,
+      message: "Banner deleted successfully",
     });
   } catch (error) {
     next(error);

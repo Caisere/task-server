@@ -2,7 +2,7 @@ import { createApp } from "./app";
 import { env } from "./config/env";
 import { logger } from "./lib/logger";
 import { disconnectRedis } from "./redis/redis";
-
+import "./workers/deleteCloudinaryImage.worker";
 async function serverStartUp(): Promise<void> {
   try {
     // await connectRedis();

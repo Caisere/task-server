@@ -38,3 +38,9 @@ export async function uploadToCloudinary(
     uploadStream.end(buffer);
   });
 }
+
+export async function deleteBannerFromCloudinary(
+  publicId: string,
+): Promise<void> {
+  await cloudinary.uploader.destroy(publicId);
+}
