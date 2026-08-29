@@ -68,4 +68,9 @@ export const env = {
   cloudinary_cloud_api_secret: checkRequiredEnvVariable(
     "CLOUDINARY_CLOUD_API_SECRET",
   ),
+
+  // google variables
+  googleClientId: checkRequiredEnvVariable("GOOGLE_CLIENT_ID"),
+  googleClientSecret: checkRequiredEnvVariable("GOOGLE_CLIENT_SECRET"),
+  googleCallbackUrl: checkRequiredEnvVariable("GOOGLE_CALLBACK_URL"),
 } as const;

@@ -1,11 +1,13 @@
 import { Router } from "express";
 import {
   loginUser,
+  loginWithGoogle,
   registerUser,
+  startGoogleLogin,
   validateRefreshToken,
 } from "../services/auth.service";
 import { authenticate } from "../middleware/auth.middleware";
-import { setAuthCookies } from "../lib/cookie";
+import { clearAuthCookies, setAuthCookies } from "../lib/cookie";
 import {
   authenticationRateLimit,
   refreshRateLimit,
@@ -85,10 +87,58 @@ authRouter.post("/refresh", refreshRateLimit, async (req, res, next) => {
 
 // me
 authRouter.get("/me", authenticate, async (req, res) => {
-  res.json(200).json({
+  res.status(200).json({
     success: true,
     data: {
       user: req.user,
     },
+  });
+});
+
+// google auth
+authRouter.get("/google", (_req, res) => {
+  const googleAuthUrl = startGoogleLogin();
+  res.redirect(googleAuthUrl);
+});
+
+authRouter.get("/callback/google", async (req, res, next) => {
+  try {
+    const code = req.query.code as string | undefined;
+
+    const payload = await loginWithGoogle(code);
+
+    if (!payload) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid Credentials",
+      });
+    }
+
+    setAuthCookies(res, {
+      id: payload.id,
+      email: payload.email,
+      role: payload.role,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully",
+      data: {
+        id: payload.id,
+        email: payload.email,
+        role: payload.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+authRouter.post("/logout", async (_req, res) => {
+  clearAuthCookies(res);
+
+  res.status(201).json({
+    success: true,
+    message: "Logged out cleanly",
   });
 });
