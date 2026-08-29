@@ -27,6 +27,12 @@ export function authenticate(
 }
 
 export function requireCsrf(req: Request, _res: Response, next: NextFunction) {
+  // automatic bypass safe operations
+  const safeMethods = ["GET", "HEAD", "OPTIONS"];
+  if (safeMethods.includes(req.method)) {
+    return next();
+  }
+
   const csrfCookie = req.cookies?.["csrf_token"];
   const csrfHeader = req.header("x-csrf-token");
 
